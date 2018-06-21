@@ -1,2 +1,6 @@
-# calendar_tasks
-The application allows you to manage your daily tasks
+# CalendarTasks
+
+The application allows you to manage your daily tasks.
+
+### Smart contract
+

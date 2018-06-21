@@ -1,0 +1,193 @@
+"use strict";
+
+//n1qmKQ8zLmHV6j9ms82SWsFEynYwWm8hFkM
+
+class Task {
+    constructor(data) {
+        let obj = data ? JSON.parse(data) : {};
+        this.id = obj.id || 0;
+        this.text = obj.text;
+    }
+
+    toString() {
+        return JSON.stringify(this);
+    }
+}
+
+class DateTask {
+    constructor(data) {
+        let obj = data ? JSON.parse(data) : {};
+        this.id = obj.id || 0;
+        this.task_id = obj.task_id;
+        this.date = obj.date;
+        this.completed = obj.completed || false;
+    }
+
+    toString() {
+        return JSON.stringify(this);
+    }
+}
+
+class CalendarTasksContract {
+    constructor() {
+        LocalContractStorage.defineMapProperty(this, "tasks", {
+            parse: function (data) { return new Task(data); },
+            stringify: function (o) { return o.toString(); }
+        });
+        LocalContractStorage.defineMapProperty(this, "dateTasks", {
+            parse: function (data) { return new DateTask(data); },
+            stringify: function (o) { return o.toString(); }
+        });
+        LocalContractStorage.defineMapProperty(this, "userTasks");
+        LocalContractStorage.defineMapProperty(this, "userDateTasks");
+        LocalContractStorage.defineMapProperty(this, "userDates");
+    }
+
+    init() {}
+
+    _userId() {
+        return Blockchain.transaction.from;
+    }
+
+    _generateId() {
+        return Math.random().toString(36).slice(2);
+    }
+
+    _userDateKey(user_id, date) {
+        return user_id + "_" + date.getDate() + "_" + date.getMonth() + "_" + date.getFullYear();
+    }
+
+    _createTask(text) {
+        let task = new Task();
+        task.id = this._generateId();
+        task.text = text;
+
+        this.tasks.put(task.id, task);
+
+        return task;
+    }
+
+    _createDateTask(task, date, recurrent) {
+        let date_task = new DateTask();
+        date_task.id = this._generateId();
+        date_task.task_id = task.id;
+        date_task.date = date;
+        date_task.recurrent = recurrent;
+        this.dateTasks.put(date_task.id, date_task);
+
+        return date_task;
+    }
+
+    _addTaskToUsersTasksList(user_id, task) {
+        let user_tasks = this.userTasks.get(user_id) || [];
+        if (!user_tasks.includes(task.id)) {
+            user_tasks.push(task.id);
+            this.userTasks.put(user_id, user_tasks);
+        }
+    }
+
+    _removeTaskFromUsersTasksList(user_id, task) {
+        let user_tasks = this.userTasks.get(user_id) || [];
+        if (user_tasks.includes(task.id)) {
+            user_tasks = user_tasks.filter(item => item !== task.id);
+            this.userTasks.put(user_id, user_tasks);
+        }
+    }
+
+    _addDateTaskToUsersDateTasksList(user_id, date, date_task) {
+        let user_date_key = this._userDateKey(user_id, date);
+        let user_date_tasks = this.userDateTasks.get(user_date_key) || [];
+        user_date_tasks.push(date_task.id);
+        this.userDateTasks.put(user_date_key, user_date_tasks);
+    }
+
+    _removeTaskFromUsersDateTasksList(user_id, date_task) {
+        let user_date_key = this._userDateKey(user_id, date_task.date);
+        let user_date_tasks = this.userDateTasks.get(user_date_key) || [];
+        if (user_date_tasks.includes(date_task.id)) {
+            user_date_tasks = user_date_tasks.filter(item => item !== date_task.id);
+            this.userTasks.put(user_date_key, user_date_tasks);
+        }
+    }
+
+    // addTask(text) {
+    //     let user_id = this._userId();
+    //     let task = this._createTask(text);
+    //     let date_task = this._createDateTask(task);
+    //     this._addTaskToUsersTasksList(user_id, task);
+    //     this._addDateTaskToUsersDateTasksList(user_id, date_task);
+    // }
+
+    addDateTask(date, text, recurrent = true) {
+        if (date is String) {
+            date = new Date(date);
+        }
+
+        let user_id = this._userId();
+        let task = this._createTask(text);
+        let date_task = this._createDateTask(task, date, recurrent);
+        if (recurrent) {
+            this._addTaskToUsersTasksList(user_id, task);
+        }
+        this._addDateTaskToUsersDateTasksList(user_id, date, date_task);
+    }
+
+    completeDateTask(date_task_id, completed) {
+        let date_task = this.dateTasks.get(date_task_id);
+        date_task.completed = true;
+        this.dateTasks.put(date_task_id, date_task);
+    }
+
+    updateDateTaskText(date_task_id, text) {
+        let date_task = this.dateTasks.get(date_task_id);
+        date_task.text = text;
+        this.dateTasks.put(date_task_id, date_task);
+    }
+
+    updateDateTaskRecurrentability(date_task_id, recurrent) {
+        let date_task = this.dateTasks.get(date_task_id);
+        let task = this.tasks.get(date_task.task_id);
+        if (recurrent) {
+            this._addTaskToUsersTasksList(user_id, task);
+        } else {
+            this._removeTaskFromUsersTasksList(user_id, task);
+        }
+    }
+
+    deleteDateTask(date_task_id) {
+        let date_task = this.dateTasks.get(date_task_id);
+        let task = this.tasks.get(date_task.task_id);
+        this._removeTaskFromUsersDateTasksList(user_id, date_task);
+        this._removeTaskFromUsersTasksList(user_id, task);
+    }
+
+    getDateTasks(date) {
+        let user_id = this._userId();
+        let user_date_key = this._userDateKey(user_id, date);
+        let date_present = this.userDates.get(user_date_key) || false;
+        if (date_present) {
+            let user_date_task_ids = this.userDateTasks.get(user_date_key) || [];
+            let user_date_tasks = [];
+            for (var date_task_id in user_date_task_ids) {
+                user_date_tasks.push(this.userDateTasks.get(date_task_id));
+            }
+            return user_date_tasks;
+        } else {
+            let user_task_ids = this.userTasks.get(user_id) || [];
+            let user_date_task_ids = [];
+            let user_date_tasks = [];
+            for (var task_id in user_task_ids) {
+                let task = this.tasks.get(task_id);
+                let date_task = this._createDateTask(task, date, true);
+                user_date_task_ids.push(date_task.id);
+                user_date_tasks.push(date_task);
+            }
+            this.userDateTasks.put(user_date_key, user_date_task_ids);
+            this.userDates.put(user_date_key, true);
+            return user_date_tasks;
+        }
+    }
+
+}
+
+module.exports = CalendarTasksContract;
