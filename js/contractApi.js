@@ -1,8 +1,10 @@
-const CONTRACT_ADDRESS = "n1iJBY1XXFjzenDebszcXvSbQVQwqcKqpRi";
- 
+// const CONTRACT_ADDRESS = "n1iJBY1XXFjzenDebszcXvSbQVQwqcKqpRi";
+const CONTRACT_ADDRESS = "n1mQ6A2YKGu7NQvTryT6iJnmR11mig7bxCY";
+
+
 class SmartContractApi {
     constructor(contractAdress) {
-        let NebPay = require("nebpay"); 
+        let NebPay = require("nebpay");
         this.nebPay = new NebPay();
         this._contractAdress = contractAdress || CONTRACT_ADDRESS;
     }
@@ -12,31 +14,31 @@ class SmartContractApi {
     }
 
     _simulateCall({ value = "0", callArgs = "[]", callFunction , callback }) {
-        this.nebPay.simulateCall(this._contractAdress, value, callFunction, callArgs, {  
+        this.nebPay.simulateCall(this._contractAdress, value, callFunction, callArgs, {
             callback: function(resp){
                 if(callback){
                     callback(resp);
-                }           
-            }   
+                }
+            }
         });
     }
-    
+
     _call({ value = "0", callArgs = "[]", callFunction , callback }) {
-        this.nebPay.call(this._contractAdress, value, callFunction, callArgs, {  
+        this.nebPay.call(this._contractAdress, value, callFunction, callArgs, {
             callback: function(resp){
                 if(callback){
                     callback(resp);
-                }           
-            }   
+                }
+            }
         });
-    } 
+    }
 }
 
 class TaskContractApi extends SmartContractApi{
     add(text, completed, cb) {
         this._call({
             callArgs : `[${Date.now()}, "${text}", ${completed}]`,
-            callFunction : "add", 
+            callFunction : "add",
             callback: cb
         });
     }
@@ -44,31 +46,31 @@ class TaskContractApi extends SmartContractApi{
     update(taskId, text, completed, cb) {
         this._call({
             callArgs : `[${taskId}, "${text}", ${completed}]`,
-            callFunction : "update", 
+            callFunction : "update",
             callback: cb
         });
-    }    
+    }
 
     delete(taskId, cb) {
         this._call({
             callArgs: `[${taskId}]`,
-            callFunction : "delete", 
+            callFunction : "delete",
             callback: cb
         });
     }
 
     getTotalCount(cb) {
         this._simulateCall({
-            callFunction : "total", 
+            callFunction : "total",
             callback: cb
         });
     }
-    
+
     get(limit, offset, taskType, cb) {
         this._simulateCall({
             callArgs : `[${limit}, ${offset}, "${taskType}"]`,
-            callFunction : "get", 
+            callFunction : "get",
             callback: cb
         });;
-    }   
+    }
 }

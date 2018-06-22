@@ -21,6 +21,7 @@ class DateTask {
         this.task_id = obj.task_id;
         this.date = obj.date;
         this.completed = obj.completed || false;
+        this.recurrent = obj.recurrent || false;
     }
 
     toString() {
@@ -119,7 +120,12 @@ class CalendarTasksContract {
     // }
 
     addDateTask(date, text, recurrent = true) {
-        if (date is String) {
+        if (typeof date === 'string') {
+            let timestamp = Date.parse(date);
+            if (isNaN(timestamp) == true) {
+                throw new Error("Wrong date format");
+            }
+
             date = new Date(date);
         }
 
@@ -134,19 +140,31 @@ class CalendarTasksContract {
 
     completeDateTask(date_task_id, completed) {
         let date_task = this.dateTasks.get(date_task_id);
+        if (!date_task) {
+            throw new Error("Date task not found");
+        }
         date_task.completed = true;
         this.dateTasks.put(date_task_id, date_task);
     }
 
     updateDateTaskText(date_task_id, text) {
         let date_task = this.dateTasks.get(date_task_id);
+        if (!date_task) {
+            throw new Error("Date task not found");
+        }
         date_task.text = text;
         this.dateTasks.put(date_task_id, date_task);
     }
 
     updateDateTaskRecurrentability(date_task_id, recurrent) {
         let date_task = this.dateTasks.get(date_task_id);
+        if (!date_task) {
+            throw new Error("Date task not found");
+        }
         let task = this.tasks.get(date_task.task_id);
+        if (!task) {
+            throw new Error("Task not found");
+        }
         if (recurrent) {
             this._addTaskToUsersTasksList(user_id, task);
         } else {
@@ -156,7 +174,13 @@ class CalendarTasksContract {
 
     deleteDateTask(date_task_id) {
         let date_task = this.dateTasks.get(date_task_id);
+        if (!date_task) {
+            throw new Error("Date task not found");
+        }
         let task = this.tasks.get(date_task.task_id);
+        if (!task) {
+            throw new Error("Task not found");
+        }
         this._removeTaskFromUsersDateTasksList(user_id, date_task);
         this._removeTaskFromUsersTasksList(user_id, task);
     }

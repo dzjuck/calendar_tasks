@@ -1,5 +1,8 @@
 "use strict";
 
+// testnet n1khNfymzN7fVdsYSBAsn5RsUxsfhvogprw
+// testnet n1mQ6A2YKGu7NQvTryT6iJnmR11mig7bxCY
+
 class Task {
     constructor(text) {
         let obj = text ? JSON.parse(text) : {};
@@ -48,9 +51,11 @@ class TaskContract {
 
         this.tasks.put(index, task);
         let userTasks = this.userTasks.get(from) || [];
-        userTasks.push(index);        
+        userTasks.push(index);
         this.userTasks.put(from, userTasks);
         this.count = new BigNumber(index).plus(1);
+
+        return task;
     }
 
     update(id, text, completed) {
@@ -82,16 +87,16 @@ class TaskContract {
             if (task) {
                 console.warn('#1');
                 if(taskType == 'active' && !task.completed) {
-                    arr.push(task); 
-                    continue;                   
+                    arr.push(task);
+                    continue;
                 }
                 if(taskType == 'completed' && task.completed) {
-                    arr.push(task); 
-                    continue;                   
+                    arr.push(task);
+                    continue;
                 }
                 if(taskType == 'any') {
                     arr.push(task);
-                }                 
+                }
             }
         }
 
