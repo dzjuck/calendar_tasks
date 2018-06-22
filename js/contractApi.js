@@ -1,4 +1,4 @@
-const CONTRACT_ADDRESS = "n1iJBY1XXFjzenDebszcXvSbQVQwqcKqpRi";
+const CONTRACT_ADDRESS = "n1khNfymzN7fVdsYSBAsn5RsUxsfhvogprw";
  
 class SmartContractApi {
     constructor(contractAdress) {
@@ -33,9 +33,9 @@ class SmartContractApi {
 }
 
 class TaskContractApi extends SmartContractApi{
-    add(text, completed, cb) {
+    add(text, date, completed, cb) {
         this._call({
-            callArgs : `[${Date.now()}, "${text}", ${completed}]`,
+            callArgs : `[${date}, "${text}", ${completed}]`,
             callFunction : "add", 
             callback: cb
         });
