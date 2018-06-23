@@ -1,6 +1,6 @@
 "use strict";
 
-//n1qWbUwD7x4UREzz5TbsKaozc1w6caPxC9J
+//n1xaN93mv9Lh5ziPi69U794acQ18su2QEvc
 
 function prepareDate(date) {
     if (typeof date === 'string') {
@@ -55,7 +55,7 @@ class CalendarTasksContract {
         LocalContractStorage.defineMapProperty(this, "userTasks");
         LocalContractStorage.defineMapProperty(this, "userDateTasks");
         LocalContractStorage.defineMapProperty(this, "userDates");
-        LocalContractStorage.defineMapProperty(this, "dateTasksByTx");
+        // LocalContractStorage.defineMapProperty(this, "dateTasksByTx");
     }
 
     init() {}
@@ -93,7 +93,7 @@ class CalendarTasksContract {
         date_task.date = date;
         date_task.txhash = this._txHash();
         this.dateTasks.put(date_task.id, date_task);
-        this.dateTasksByTx.put(this._txHash(), date_task.id);
+        // this.dateTasksByTx.put(this._txHash(), date_task.id);
 
         return date_task;
     }
@@ -152,9 +152,24 @@ class CalendarTasksContract {
         }
     }
 
-    getDateTaskIdByDateAndTx(date, tx) {
-        let date_task_id = this.dateTasksByTx.get(tx);
-        return date_task_id;
+    getDateTaskIdByDateAndTx(date, txHash) {
+        date = prepareDate(date);
+        let user_id = this._userId();
+        let user_date_key = this._userDateKey(user_id, date);
+
+        let user_date_task_ids = this.userDateTasks.get(user_date_key) || [];
+        let user_date_tasks = [];
+        for (var i in user_date_task_ids) {
+            let date_task_id = user_date_task_ids[i];
+            user_date_tasks.push(this.dateTasks.get(date_task_id));
+        }
+
+        let user_date_task = user_date_tasks.find(o => o.txhash === txHash);
+        if (user_date_task === undefined) {
+            return null;
+        } else {
+            return user_date_task.id;
+        }
     }
 
     completeDateTask(date_task_id, completed) {

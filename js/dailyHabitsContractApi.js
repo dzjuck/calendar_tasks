@@ -75,7 +75,7 @@ class DailyHabitsContractApi extends SmartContractApi{
 
     getByDate(date, cb) {
         this._simulateCall({
-            callArgs : `[${date}"]`,
+            callArgs : `["${date}"]`,
             callFunction : "getDateTasks",
             callback: cb
         });
@@ -83,7 +83,7 @@ class DailyHabitsContractApi extends SmartContractApi{
 
     createByDate(date, cb) {
         this._call({
-            callArgs : `[${date}"]`,
+            callArgs : `["${date}"]`,
             callFunction : "createDateTasks",
             callback: cb
         });
