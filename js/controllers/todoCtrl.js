@@ -11,9 +11,10 @@ angular.module('calendar_tasks')
 
         var store;
         var vm = this;
-		vm.todos = [];// = $scope.todos = store.todos;
+		vm.todos = null;// = $scope.todos = store.todos;
         vm.currentDate = null;
         vm.editedTodo = null;
+        vm.empty = false;
 
         vm.newTask = '';
 
@@ -63,16 +64,47 @@ angular.module('calendar_tasks')
             })
         }
 
+
+
 		vm.removeTask = function (task) {
 			store.delete(task).then( function() {
                 vm.todos.splice(vm.todos.indexOf(task), 1);
             });
 		};
 
+        vm.initTasks = function() {
+            var date = $filter('date')(vm.currentDate, "yyyy-MM-dd");
+
+            store.initDate(date).then(function(block_response){
+                console.log('[init date]', block_response);
+
+                var _checkList = function() {
+                    store.get(date).then(function(tasks){
+                            vm.todos = tasks || [];
+                            vm.empty = false;
+                    });
+                };
+                $interval( _checkList, 3000, 10, false, date );
+            });
+        };
+
         vm.onDateChange = function() {
             var date = $filter('date')(vm.currentDate, "yyyy-MM-dd");
             store.get(date).then(function(tasks){
                 vm.todos = tasks || [];
+                console.log(tasks, typeof(tasks));
+                
+                if (tasks == null) { 
+                    vm.empty = true;
+                    /*
+                    store.initDate(date).then(function(blockchain_resp){
+                        console.log('[init date]', blockchain_resp);
+                    });
+                    */
+                }
+                else {
+                    vm.empty = false;
+                }
             });
 
             console.log('changed date', date);

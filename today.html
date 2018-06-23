@@ -50,6 +50,10 @@
 
 				</header>
 
+                <section class="main" ng-cloak ng-show="ctrl.empty" >
+                    <button class="btn btn-default" ng-click="ctrl.initTasks()" >Populate default list</button>
+                </section>
+
 				<section class="main" ng-show="ctrl.todos.length" ng-cloak>
 					<ul class="todo-list">
 						<li ng-repeat="todo in ctrl.todos  track by $index" ng-class="{completed: todo.completed, editing: todo == editedTodo}">
