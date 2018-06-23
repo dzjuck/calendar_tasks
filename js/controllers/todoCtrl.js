@@ -19,7 +19,8 @@ angular.module('calendar_tasks')
         vm.txMap = {};
 
         vm.init = function(type = 'active') {
-            store.get().then(function(tasks){
+            var dt = $filter('date')(new Date(), "yyyy-MM-dd");
+            store.get(dt).then(function(tasks){
                 vm.todos = tasks;
             });
         }
@@ -32,7 +33,8 @@ angular.module('calendar_tasks')
 
             var completed = false;
 			$scope.saving = true;
-            var date = vm.currentDate || Date.now();
+            var date = $filter('date')( vm.currentDate || new Date(), "yyyy-MM-dd");
+
             store.add(text, date, completed)
 				.then(function success(block_response) {
                     console.log('[ctrl] on success block_task', block_response);
@@ -40,7 +42,7 @@ angular.module('calendar_tasks')
                     var tmpTask = {'text': text, 'date':date, 'completed':completed, 'id':false, 'hash':block_response['txhash'] };
                     vm.todos.push( tmpTask );
                     vm.txMap[ block_response['txhash'] ] = false; //pending
-                    $interval( _checkTxHash, 5000, 3, false, tmpTask );
+                    $interval( _checkTxHash, 10000, 3, false, tmpTask );
 				})
 				.finally(function () {
 					$scope.saving = false;
@@ -49,7 +51,7 @@ angular.module('calendar_tasks')
 
         function _checkTxHash(tmpTask) {
             console.log('[_checkHash]', tmpTask, vm.todos.indexOf(tmpTask));
-            store.checkHash( tmpTask.hash ).then(function(ret){
+            store.checkHash( tmpTask.date, tmpTask.hash ).then(function(ret){
                 console.log('[_checkHashGET]', ret);
                 if (ret.status) {
                     tmpTask.id = Math.random();
@@ -57,15 +59,36 @@ angular.module('calendar_tasks')
             })
         }
 
-		vm.removeTask = function (todo) {
-			store.delete(todo).then( function() {
-                vm.todos.splice(vm.todos.indexOf(todo), 1);
+		vm.removeTask = function (task) {
+			store.delete(task).then( function() {
+                vm.todos.splice(vm.todos.indexOf(task), 1);
             });
 		};
 
-        vm.onDateChange = function () {
+        vm.onDateChange = function() {
             console.log('changed date', vm.currentDate);
 		};
+
+        vm.toggleCompleted = function(task){
+            store.complete(task).then(function() {
+                console.log('[ctrl] completed', task.completed);
+            });
+        };
+
+        
+
+	    vm.editTask = function (task) {
+			vm.editedTodo = task;
+			// Clone the original todo to restore it on demand.
+			vm.originalTodo = angular.extend({}, task);
+		};
+		vm.revertEdits = function (task) {
+			vm.todos[vm.todos.indexOf(task)] = vm.originalTodo;
+			vm.editedTodo = null;
+			vm.originalTodo = null;
+			vm.reverted = true;
+		};
+
 
  /*
 
@@ -82,32 +105,6 @@ angular.module('calendar_tasks')
 				{ completed: false } : (status === 'completed') ?
 				{ completed: true } : {};
 		});
-
-		$scope.addTodo = function () {
-			var newTodo = {
-				title: $scope.newTodo.trim(),
-				completed: false
-			};
-
-			if (!newTodo.title) {
-				return;
-			}
-
-			$scope.saving = true;
-			store.insert(newTodo)
-				.then(function success() {
-					$scope.newTodo = '';
-				})
-				.finally(function () {
-					$scope.saving = false;
-				});
-		};
-
-		$scope.editTodo = function (todo) {
-			$scope.editedTodo = todo;
-			// Clone the original todo to restore it on demand.
-			$scope.originalTodo = angular.extend({}, todo);
-		};
 
 		$scope.saveEdits = function (todo, event) {
 			// Blur events are automatically triggered after the form submit event.
@@ -141,12 +138,7 @@ angular.module('calendar_tasks')
 				});
 		};
 
-		$scope.revertEdits = function (todo) {
-			vm.todos[vm.todos.indexOf(todo)] = $scope.originalTodo;
-			$scope.editedTodo = null;
-			$scope.originalTodo = null;
-			$scope.reverted = true;
-		};
+
 
 
 		$scope.saveTodo = function (todo) {
