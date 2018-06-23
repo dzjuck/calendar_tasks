@@ -44,7 +44,7 @@ angular.module('calendar_tasks')
 
             update: function(task) {
                 var deferred = $q.defer();
-                blockAPI.update(task.id, task.text, task.completed, function(blockchain_resp){
+                blockAPI.update(task.id, task.text, function(blockchain_resp){
                     deferred.resolve(blockchain_resp);
                 });
 				return deferred.promise;
@@ -54,7 +54,6 @@ angular.module('calendar_tasks')
             checkHash: function(date, txhash) {
                 var deferred = $q.defer();
                 blockAPI.getIdByDateAndTx(date, txhash, function(blockchain_resp){
-                    console.log('[store] getDateTaskIdByTx');
                     deferred.resolve(blockchain_resp);
                 });
 				return deferred.promise;

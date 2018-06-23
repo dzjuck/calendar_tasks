@@ -14,7 +14,6 @@ class SmartContractApi {
     _simulateCall({ value = "0", callArgs = "[]", callFunction , callback }) {
         this.nebPay.simulateCall(this._contractAdress, value, callFunction, callArgs, {
             callback: function(resp){
-                console.log(resp);
                 if(callback){
                     callback(resp);
                 }

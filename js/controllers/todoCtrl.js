@@ -13,6 +13,7 @@ angular.module('calendar_tasks')
         var vm = this;
 		vm.todos = [];// = $scope.todos = store.todos;
         vm.currentDate = null;
+        vm.editedTodo = null;
 
         vm.newTask = '';
 
@@ -21,9 +22,10 @@ angular.module('calendar_tasks')
         vm.init = function(type = 'active') {
             var dt = $filter('date')(new Date(), "yyyy-MM-dd");
             store.get(dt).then(function(tasks){
-                vm.todos = tasks;
+                vm.todos = tasks || [];
             });
         }
+
         
         vm.addTask = function() {
             var text = vm.newTask.trim();
@@ -50,11 +52,13 @@ angular.module('calendar_tasks')
         };
 
         function _checkTxHash(tmpTask) {
-            console.log('[_checkHash]', tmpTask, vm.todos.indexOf(tmpTask));
+           // console.log('[_checkHash]', tmpTask, vm.todos.indexOf(tmpTask));
             store.checkHash( tmpTask.date, tmpTask.hash ).then(function(ret){
                 console.log('[_checkHashGET]', ret);
-                if (ret.status) {
-                    tmpTask.id = Math.random();
+                if (ret && ret.result && ret.result !== "null") {
+                    vm.todos[vm.todos.indexOf(tmpTask)].id = ret.result.replace(/"/g, "");
+                   // tmpTask.id = ret.result;
+                    console.log(vm.todos)
                 }
             })
         }
@@ -66,7 +70,12 @@ angular.module('calendar_tasks')
 		};
 
         vm.onDateChange = function() {
-            console.log('changed date', vm.currentDate);
+            var date = $filter('date')(vm.currentDate, "yyyy-MM-dd");
+            store.get(date).then(function(tasks){
+                vm.todos = tasks || [];
+            });
+
+            console.log('changed date', date);
 		};
 
         vm.toggleCompleted = function(task){
@@ -75,13 +84,12 @@ angular.module('calendar_tasks')
             });
         };
 
-        
-
 	    vm.editTask = function (task) {
 			vm.editedTodo = task;
 			// Clone the original todo to restore it on demand.
 			vm.originalTodo = angular.extend({}, task);
 		};
+
 		vm.revertEdits = function (task) {
 			vm.todos[vm.todos.indexOf(task)] = vm.originalTodo;
 			vm.editedTodo = null;
@@ -138,33 +146,5 @@ angular.module('calendar_tasks')
 				});
 		};
 
-
-
-
-		$scope.saveTodo = function (todo) {
-			store.put(todo);
-		};
-
-		$scope.toggleCompleted = function (todo, completed) {
-			if (angular.isDefined(completed)) {
-				todo.completed = completed;
-			}
-			store.put(todo, vm.todos.indexOf(todo))
-				.then(function success() {}, function error() {
-					todo.completed = !todo.completed;
-				});
-		};
-
-		$scope.clearCompletedTodos = function () {
-			store.clearCompleted();
-		};
-
-		$scope.markAll = function (completed) {
-			vm.todos.forEach(function (todo) {
-				if (todo.completed !== completed) {
-					$scope.toggleCompleted(todo, completed);
-				}
-			});
-		};
         */
 	}]);
