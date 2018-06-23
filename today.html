@@ -29,19 +29,26 @@
         
 		<script src="js/services/blockChainService.js"></script>
 
+        <style>
+            .blockhain_pending{
+                    width: 40px;
+                    text-align: center;
+                    position: absolute;
+                    top: 16px;
+            }
+        </style>
+
 	</head>
 	<body ng-app="calendar_tasks" style="max-width:100%" ng-controller='TodoCtrl as ctrl' ng-init='ctrl.init()'>
-		<!--ng-view></ng-view-->
-		<!--script type="text/ng-template" id="todomvc-index.html"-->
-    <div class="col-sm-3" style="display:inline-block;min-height:290px; min-width:290px; margin-top:130px;">
-      <div uib-datepicker ng-model="dt" class="well well-sm" datepicker-options="options"></div>
-    </div>
+        <div class="col-sm-3" style="display:inline-block;min-height:290px; min-width:290px; margin-top:130px;">
+            <div uib-datepicker ng-model="ctrl.currentDate" ng-change="ctrl.onDateChange()" class="well well-sm" datepicker-options="options"></div>
+        </div>
 
         <div class="col-sm-8">
 
 			<section class="todoapp">
 				<header class="header">
-					<h1>Habbits</h1>
+                    <h1>Habbits {{ctrl.currentDate|date:'dd.MM.yy'}}</h1>
 					<form class="todo-form" ng-submit="ctrl.addTask()">
 						<input class="new-todo" placeholder="What needs to be done?" ng-model="ctrl.newTask" ng-disabled="saving" autofocus>
 					</form>
@@ -49,14 +56,13 @@
 				</header>
 
 				<section class="main" ng-show="ctrl.todos.length" ng-cloak>
-					<input id="toggle-all" class="toggle-all" type="checkbox" ng-model="allChecked" ng-click="markAll(allChecked)">
-					<label for="toggle-all">Mark all as complete</label>
 					<ul class="todo-list">
 						<li ng-repeat="todo in ctrl.todos  track by $index" ng-class="{completed: todo.completed, editing: todo == editedTodo}">
 							<div class="view">
-								<input class="toggle" type="checkbox" ng-model="todo.completed" ng-change="toggleCompleted(todo)">
+								<input class="toggle" ng-if="todo.id" type="checkbox" ng-model="todo.completed" ng-change="toggleCompleted(todo)">
+                                <i ng-if="!todo.id" class="blockhain_pending glyphicon glyphicon-cloud-upload"></i>
 								<label ng-dblclick="editTodo(todo)">{{todo.text}}</label>
-								<button class="destroy" ng-click="ctrl.removeTask(todo)"></button>
+								<button ng-if="todo.id" class="destroy" ng-click="ctrl.removeTask(todo)"></button>
 							</div>
 							<form ng-submit="saveEdits(todo, 'submit')">
 								<input class="edit" ng-trim="false" ng-model="todo.text" todo-escape="revertEdits(todo)" ng-blur="saveEdits(todo, 'blur')" todo-focus="todo == editedTodo">
@@ -64,34 +70,7 @@
 						</li>
 					</ul>
 				</section>
-				<!--footer class="footer" ng-show="ctrl.todos.length" ng-cloak>
-					<span class="todo-count"><strong>{{remainingCount}}</strong>
-						<ng-pluralize count="remainingCount" when="{ one: 'item left', other: 'items left' }"></ng-pluralize>
-					</span>
-					<ul class="filters">
-						<li>
-							<a ng-class="{selected: status == ''} " href="#/">All</a>
-						</li>
-						<li>
-							<a ng-class="{selected: status == 'active'}" href="#/active">Active</a>
-						</li>
-						<li>
-							<a ng-class="{selected: status == 'completed'}" href="#/completed">Completed</a>
-						</li>
-					</ul>
-					<button class="clear-completed" ng-click="clearCompletedTodos()" ng-show="completedCount">Clear completed</button>
-				</footer-->
 			</section>
-			<!--footer class="info">
-				<p>Double-click to edit a todo</p>
-				<p>Credits:
-					<a href="http://twitter.com/cburgdorf">Christoph Burgdorf</a>,
-					<a href="http://ericbidelman.com">Eric Bidelman</a>,
-					<a href="http://jacobmumm.com">Jacob Mumm</a> and
-					<a href="http://blog.igorminar.com">Igor Minar</a>
-				</p>
-				<p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
-			</footer-->
 		<!--/script-->
         </div>
 	</body>

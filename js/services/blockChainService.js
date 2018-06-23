@@ -8,9 +8,9 @@ angular.module('calendar_tasks')
 			get: function (type='active') {
 				var deferred = $q.defer();
                 var tasks = null;
-                blockAPI.get(100, 0, type, function(resp){
-                    if(resp.result) {
-                        tasks = JSON.parse(resp.result);
+                blockAPI.get(100, 0, type, function(blockchain_resp){
+                    if(blockchain_resp.result) {
+                        tasks = JSON.parse(blockchain_resp.result);
                     }
                     deferred.resolve(tasks);
                 });
@@ -19,46 +19,27 @@ angular.module('calendar_tasks')
 
             add: function(text, date, completed=false) {
                 var deferred = $q.defer();
-                blockAPI.add(text, date, completed, function(resp){
-                    console.log('ADD RET:');
-                    console.log(resp);
-                    /*
-                    if(resp.result) {
-                        deferred.resolve(JSON.parse(resp.result));
-                    }
-                    else {
-                        deferred.reject();
-                    }
-                    */
+                blockAPI.add(text, date, completed, function(blockchain_resp){
+                    deferred.resolve(blockchain_resp);
                 });
 				return deferred.promise;
             },
 
             delete: function(task) {
-                /*
-				var originalTodos = store.todos.slice(0);
-
-				store.todos.splice(store.todos.indexOf(todo), 1);
-				return store.api.delete({ id: todo.id },
-					function () {
-					}, function error() {
-						angular.copy(originalTodos, store.todos);
-					});
-                */
                 var deferred = $q.defer();
-                blockAPI.delete(task.id, function(resp){
-                    console.log('DEL RET:');
-                    console.log(resp);
-                    if(resp.result) {
-
-                        deferred.resolve(JSON.parse(resp.result));
-                    }
-                    else {
-                        deferred.reject();
-                    }
+                blockAPI.delete(task.id, function(blockchain_resp){
+                    deferred.resolve(blockchain_resp);
                 });
 				return deferred.promise;
-			}
+			},
+
+            checkHash: function(hash) {
+                var deferred = $q.defer();
+                blockAPI.getDateTaskIdByTx(hash, function(blockchain_resp){
+                    deferred.resolve(blockchain_resp);
+                });
+				return deferred.promise;
+            }
         };
 
         return BlockchainService;

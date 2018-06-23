@@ -6,19 +6,17 @@
  * - exposes the model to the template and provides event handlers
  */
 angular.module('calendar_tasks')
-	.controller('TodoCtrl', ['$scope', /*'$routeParams', */ '$filter', 'todoStorage', function TodoCtrl($scope, /* $routeParams,*/ $filter, store ) {
+	.controller('TodoCtrl', ['$scope', '$interval', '$filter', 'todoStorage', '$http', function TodoCtrl($scope, $interval, $filter, store, $http ) {
 		'use strict';
 
         var store;
-
-
         var vm = this;
 		vm.todos = [];// = $scope.todos = store.todos;
+        vm.currentDate = null;
 
         vm.newTask = '';
 
-		$scope.newTodo = '';
-		$scope.editedTodo = null;
+        vm.txMap = {};
 
         vm.init = function(type = 'active') {
             store.get().then(function(tasks){
@@ -34,19 +32,39 @@ angular.module('calendar_tasks')
 
             var completed = false;
 			$scope.saving = true;
-            var date = Date.now();
+            var date = vm.currentDate || Date.now();
             store.add(text, date, completed)
-				.then(function success(block_task) {
-                    vm.newTodo = '';
-                    vm.todos.push( block_task )
+				.then(function success(block_response) {
+                    console.log('[ctrl] on success block_task', block_response);
+                    vm.newTask = '';
+                    var tmpTask = {'text': text, 'date':date, 'completed':completed, 'id':false, 'hash':block_response['txhash'] };
+                    vm.todos.push( tmpTask );
+                    vm.txMap[ block_response['txhash'] ] = false; //pending
+                    $interval( _checkTxHash, 5000, 3, false, tmpTask );
 				})
 				.finally(function () {
 					$scope.saving = false;
 				});
         };
 
+        function _checkTxHash(tmpTask) {
+            console.log('[_checkHash]', tmpTask, vm.todos.indexOf(tmpTask));
+            store.checkHash( tmpTask.hash ).then(function(ret){
+                console.log('[_checkHashGET]', ret);
+                if (ret.status) {
+                    tmpTask.id = Math.random();
+                }
+            })
+        }
+
 		vm.removeTask = function (todo) {
-			store.delete(todo);
+			store.delete(todo).then( function() {
+                vm.todos.splice(vm.todos.indexOf(todo), 1);
+            });
+		};
+
+        vm.onDateChange = function () {
+            console.log('changed date', vm.currentDate);
 		};
 
  /*
