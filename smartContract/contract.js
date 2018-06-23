@@ -1,6 +1,19 @@
 "use strict";
 
-//n225xXqGA9BxU2Ud16zpLaYS7ZcoQRyhvDi
+//n1ugysao5ErdrEHei4GLDorPdKq3uUAGni2
+
+function prepareDate(date) {
+    if (typeof date === 'string') {
+        let timestamp = Date.parse(date);
+        if (isNaN(timestamp) == true) {
+            throw new Error("Wrong date format");
+        }
+
+        date = new Date(date);
+    }
+
+    return date;
+}
 
 class Task {
     constructor(data) {
@@ -19,7 +32,7 @@ class DateTask {
         let obj = data ? JSON.parse(data) : {};
         this.id = obj.id || 0;
         this.task_id = obj.task_id;
-        this.date = obj.date;
+        this.date = prepareDate(obj.date);
         this.completed = obj.completed || false;
         this.txhash = obj.txhash;
     }
@@ -59,18 +72,6 @@ class CalendarTasksContract {
         return user_id + "_" + date.getDate() + "_" + date.getMonth() + "_" + date.getFullYear();
     }
 
-    _prepareDate(date) {
-        if (typeof date === 'string') {
-            let timestamp = Date.parse(date);
-            if (isNaN(timestamp) == true) {
-                throw new Error("Wrong date format");
-            }
-
-            date = new Date(date);
-        }
-
-        return date;
-    }
 
     _txHash() {
         return Blockchain.transaction.hash;
@@ -126,12 +127,19 @@ class CalendarTasksContract {
         let user_date_tasks = this.userDateTasks.get(user_date_key) || [];
         if (user_date_tasks.includes(date_task.id)) {
             user_date_tasks = user_date_tasks.filter(item => item !== date_task.id);
-            this.userTasks.put(user_date_key, user_date_tasks);
+            this.userDateTasks.put(user_date_key, user_date_tasks);
         }
     }
 
+    _decorateUserDateTasks(date_tasks) {
+       for (var i in date_tasks) {
+            date_tasks[i].text = this.tasks.get(date_tasks[i].task_id).text;
+       }
+       return date_tasks;
+    }
+
     addDateTask(date, text) {
-        date = this._prepareDate(date);
+        date = prepareDate(date);
         let user_id = this._userId();
         let task = this._createTask(text);
         let date_task = this._createDateTask(task, date);
@@ -164,11 +172,16 @@ class CalendarTasksContract {
         if (!date_task) {
             throw new Error("Date task not found");
         }
-        date_task.text = text;
-        this.dateTasks.put(date_task_id, date_task);
+        let task = this.tasks.get(date_task.task_id);
+        if (!task) {
+            throw new Error("Task not found");
+        }
+        task.text = text;
+        this.tasks.put(task.id, task);
     }
 
     deleteDateTask(date_task_id) {
+        let user_id = this._userId();
         let date_task = this.dateTasks.get(date_task_id);
         if (!date_task) {
             throw new Error("Date task not found");
@@ -239,7 +252,7 @@ class CalendarTasksContract {
 
     // For tests
     getUserDateTaskIds(date) {
-        date = this._prepareDate(date);
+        date = prepareDate(date);
         let user_id = this._userId();
         let user_date_key = this._userDateKey(user_id, date);
         let user_date_task_ids = this.userDateTasks.get(user_date_key);
@@ -248,7 +261,7 @@ class CalendarTasksContract {
 
     // For tests
     getUserDateTasks(date) {
-        date = this._prepareDate(date);
+        date = prepareDate(date);
         let user_id = this._userId();
         let user_date_key = this._userDateKey(user_id, date);
         let user_date_task_ids = this.userDateTasks.get(user_date_key);
@@ -262,7 +275,7 @@ class CalendarTasksContract {
 
     // For tests
     getUserDates(date) {
-        date = this._prepareDate(date);
+        date = prepareDate(date);
         let user_id = this._userId();
         let user_date_key = this._userDateKey(user_id, date);
         let date_present = this.userDates.get(user_date_key);
@@ -270,7 +283,7 @@ class CalendarTasksContract {
     }
 
     getDateTasks(date) {
-        date = this._prepareDate(date);
+        date = prepareDate(date);
         let user_id = this._userId();
         let user_date_key = this._userDateKey(user_id, date);
         let date_present = this.userDates.get(user_date_key) || false;
@@ -281,14 +294,15 @@ class CalendarTasksContract {
                 let date_task_id = user_date_task_ids[i];
                 user_date_tasks.push(this.dateTasks.get(date_task_id));
             }
-            return user_date_tasks;
+            // return user_date_tasks;
+            return this._decorateUserDateTasks(user_date_tasks);
         } else {
             return null;
         }
     }
 
     createDateTasks(date) {
-        date = this._prepareDate(date);
+        date = prepareDate(date);
         let user_id = this._userId();
         let user_date_key = this._userDateKey(user_id, date);
         let date_present = this.userDates.get(user_date_key) || false;
@@ -310,7 +324,6 @@ class CalendarTasksContract {
             this.userDates.put(user_date_key, true);
         }
     }
-
 }
 
 module.exports = CalendarTasksContract;
