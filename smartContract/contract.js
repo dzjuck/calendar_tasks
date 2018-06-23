@@ -1,6 +1,6 @@
 "use strict";
 
-//n1xaN93mv9Lh5ziPi69U794acQ18su2QEvc
+//n1gbGKZ9A7i5um23xFZncWt7hu64pirSQaB
 
 function prepareDate(date) {
     if (typeof date === 'string') {
@@ -54,7 +54,6 @@ class CalendarTasksContract {
         });
         LocalContractStorage.defineMapProperty(this, "userTasks");
         LocalContractStorage.defineMapProperty(this, "userDateTasks");
-        LocalContractStorage.defineMapProperty(this, "userDates");
     }
 
     init() {}
@@ -130,7 +129,7 @@ class CalendarTasksContract {
 
     _userDatePresent(user_date_key) {
         let user_date_tasks = this.userDateTasks.get(user_date_key);
-
+        return (Array.isArray(user_date_tasks));
     }
 
     _decorateUserDateTasks(date_tasks) {
@@ -290,20 +289,11 @@ class CalendarTasksContract {
         return user_date_tasks;
     }
 
-    // For tests
-    // getUserDates(date) {
-    //     date = prepareDate(date);
-    //     let user_id = this._userId();
-    //     let user_date_key = this._userDateKey(user_id, date);
-    //     let date_present = this.userDates.get(user_date_key);
-    //     return date_present;
-    // }
-
     getDateTasks(date) {
         date = prepareDate(date);
         let user_id = this._userId();
         let user_date_key = this._userDateKey(user_id, date);
-        let date_present = this.userDates.get(user_date_key) || false;
+        let date_present = this._userDatePresent(user_date_key);
         if (date_present) {
             let user_date_task_ids = this.userDateTasks.get(user_date_key) || [];
             let user_date_tasks = [];
@@ -321,7 +311,7 @@ class CalendarTasksContract {
         date = prepareDate(date);
         let user_id = this._userId();
         let user_date_key = this._userDateKey(user_id, date);
-        let date_present = this.userDates.get(user_date_key) || false;
+        let date_present = this._userDatePresent(user_date_key);
         if (date_present) {
             throw new Error("Date tasks already created");
         } else {
@@ -337,7 +327,6 @@ class CalendarTasksContract {
                 this.dateTasks.put(date_task.id, date_task);
             }
             this.userDateTasks.put(user_date_key, user_date_task_ids);
-            this.userDates.put(user_date_key, true);
         }
     }
 }
