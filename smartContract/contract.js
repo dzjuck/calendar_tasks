@@ -1,6 +1,6 @@
 "use strict";
 
-//n1qmKQ8zLmHV6j9ms82SWsFEynYwWm8hFkM
+//n1uBWSw2d9mrpUcbFTXqLhbKWNNBRPBL4Zj
 
 class Task {
     constructor(data) {
@@ -56,6 +56,19 @@ class CalendarTasksContract {
 
     _userDateKey(user_id, date) {
         return user_id + "_" + date.getDate() + "_" + date.getMonth() + "_" + date.getFullYear();
+    }
+
+    _prepareDate(date) {
+        if (typeof date === 'string') {
+            let timestamp = Date.parse(date);
+            if (isNaN(timestamp) == true) {
+                throw new Error("Wrong date format");
+            }
+
+            date = new Date(date);
+        }
+
+        return date;
     }
 
     _createTask(text) {
@@ -120,15 +133,7 @@ class CalendarTasksContract {
     // }
 
     addDateTask(date, text, recurrent = true) {
-        if (typeof date === 'string') {
-            let timestamp = Date.parse(date);
-            if (isNaN(timestamp) == true) {
-                throw new Error("Wrong date format");
-            }
-
-            date = new Date(date);
-        }
-
+        date = this._prepareDate(date);
         let user_id = this._userId();
         let task = this._createTask(text);
         let date_task = this._createDateTask(task, date, recurrent);
@@ -185,26 +190,118 @@ class CalendarTasksContract {
         this._removeTaskFromUsersTasksList(user_id, task);
     }
 
+    // For tests
+    getAllTasks() {
+        return this.tasks;
+    }
+
+    // For tests
+    getAllDateTasks() {
+        return this.dateTasks;
+    }
+
+    // For tests
+    getAllUserTasks() {
+        return this.userTasks;
+    }
+
+    // For tests
+    getAllUserDateTasks() {
+        return this.userDateTasks;
+    }
+
+    // For tests
+    getAllUserDates() {
+        return this.userDates;
+    }
+
+    // For tests
+    getTask(task_id) {
+        return this.tasks.get(task_id);
+    }
+
+    // For tests
+    getDateTask(date_task_id) {
+        return this.dateTasks.get(date_task_id);
+    }
+
+    // For tests
+    getUserTaskIds() {
+        let user_id = this._userId();
+        let user_task_ids = this.userTasks.get(user_id);
+        return user_task_ids;
+    }
+
+    // For tests
+    getUserTasks() {
+        let user_id = this._userId();
+        let user_task_ids = this.userTasks.get(user_id);
+
+        let user_tasks = [];
+        for (var i in user_task_ids) {
+            let task_id = user_task_ids[i];
+            let task = this.tasks.get(task_id);
+            user_tasks.push(task);
+        }
+        return user_tasks;
+    }
+
+    // For tests
+    getUserDateTaskIds(date) {
+        date = this._prepareDate(date);
+        let user_id = this._userId();
+        let user_date_key = this._userDateKey(user_id, date);
+        let user_date_task_ids = this.userDateTasks.get(user_date_key);
+        return user_date_task_ids;
+    }
+
+    // For tests
+    getUserDateTasks(date) {
+        date = this._prepareDate(date);
+        let user_id = this._userId();
+        let user_date_key = this._userDateKey(user_id, date);
+        let user_date_task_ids = this.userDateTasks.get(user_date_key);
+        let user_date_tasks = [];
+        for (var i in user_date_task_ids) {
+            let date_task_id = user_date_task_ids[i];
+            user_date_tasks.push(this.dateTasks.get(date_task_id));
+        }
+        return user_date_tasks;
+    }
+
+    // For tests
+    getUserDates(date) {
+        date = this._prepareDate(date);
+        let user_id = this._userId();
+        let user_date_key = this._userDateKey(user_id, date);
+        let date_present = this.userDates.get(user_date_key);
+        return date_present;
+    }
+
     getDateTasks(date) {
+        date = this._prepareDate(date);
         let user_id = this._userId();
         let user_date_key = this._userDateKey(user_id, date);
         let date_present = this.userDates.get(user_date_key) || false;
         if (date_present) {
             let user_date_task_ids = this.userDateTasks.get(user_date_key) || [];
             let user_date_tasks = [];
-            for (var date_task_id in user_date_task_ids) {
-                user_date_tasks.push(this.userDateTasks.get(date_task_id));
+            for (var i in user_date_task_ids) {
+                let date_task_id = user_date_task_ids[i];
+                user_date_tasks.push(this.dateTasks.get(date_task_id));
             }
             return user_date_tasks;
         } else {
             let user_task_ids = this.userTasks.get(user_id) || [];
             let user_date_task_ids = [];
             let user_date_tasks = [];
-            for (var task_id in user_task_ids) {
+            for (var i in user_task_ids) {
+                let task_id = user_task_ids[id];
                 let task = this.tasks.get(task_id);
                 let date_task = this._createDateTask(task, date, true);
                 user_date_task_ids.push(date_task.id);
                 user_date_tasks.push(date_task);
+                this.dateTasks.put(date_task.id, date_task);
             }
             this.userDateTasks.put(user_date_key, user_date_task_ids);
             this.userDates.put(user_date_key, true);
