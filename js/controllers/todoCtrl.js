@@ -108,6 +108,7 @@ angular.module('calendar_tasks')
         };
 
         vm.onDateChange = function() {
+            vm.todos = [];
             var date = $filter('date')(vm.currentDate, "yyyy-MM-dd");
             store.get(date).then(_populateResult);
 		};
