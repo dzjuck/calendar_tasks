@@ -52,7 +52,7 @@ class DailyHabitsContractApi extends SmartContractApi{
 
     updateText(taskId, text, cb) {
         this._call({
-            callArgs : `[${taskId}, "${text}"]`,
+            callArgs : `["${taskId}", "${text}"]`,
             callFunction : "updateDateTaskText",
             callback: cb
         });
@@ -60,7 +60,7 @@ class DailyHabitsContractApi extends SmartContractApi{
 
     complete(taskId, completed, cb) {
         this._call({
-            callArgs : `[${taskId}, "${completed}"]`,
+            callArgs : `["${taskId}", ${completed}]`,
             callFunction : "completeDateTask",
             callback: cb
         });
@@ -68,7 +68,7 @@ class DailyHabitsContractApi extends SmartContractApi{
 
     delete(taskId, cb) {
         this._call({
-            callArgs: `[${taskId}]`,
+            callArgs: `["${taskId}"]`,
             callFunction : "deleteDateTask",
             callback: cb
         });

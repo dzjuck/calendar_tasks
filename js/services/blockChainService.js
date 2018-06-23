@@ -2,13 +2,13 @@ angular.module('calendar_tasks')
 	.factory('todoStorage', ['$http', '$injector', '$q', function ($http, $injector, $q) {
 		'use strict';
 
-        var blockAPI = new TaskContractApi(); 
+        var blockAPI = new DailyHabitsContractApi(); 
 
         var BlockchainService = {
-			get: function (type='active') {
+			get: function (date) {
 				var deferred = $q.defer();
                 var tasks = null;
-                blockAPI.get(100, 0, type, function(blockchain_resp){
+                blockAPI.getByDate(date, function(blockchain_resp){
                     if(blockchain_resp.result) {
                         tasks = JSON.parse(blockchain_resp.result);
                     }
@@ -17,9 +17,9 @@ angular.module('calendar_tasks')
 				return deferred.promise;
 			},
 
-            add: function(text, date, completed=false) {
+            add: function(text, date) {
                 var deferred = $q.defer();
-                blockAPI.add(text, date, completed, function(blockchain_resp){
+                blockAPI.add(text, date, function(blockchain_resp){
                     deferred.resolve(blockchain_resp);
                 });
 				return deferred.promise;
@@ -33,9 +33,28 @@ angular.module('calendar_tasks')
 				return deferred.promise;
 			},
 
-            checkHash: function(hash) {
+            complete: function(task) {
                 var deferred = $q.defer();
-                blockAPI.getDateTaskIdByTx(hash, function(blockchain_resp){
+                blockAPI.complete(task.id, task.completed, function(blockchain_resp){
+                    deferred.resolve(blockchain_resp);
+                });
+				return deferred.promise;
+            },
+
+
+            update: function(task) {
+                var deferred = $q.defer();
+                blockAPI.update(task.id, task.text, task.completed, function(blockchain_resp){
+                    deferred.resolve(blockchain_resp);
+                });
+				return deferred.promise;
+            },
+
+
+            checkHash: function(date, txhash) {
+                var deferred = $q.defer();
+                blockAPI.getIdByDateAndTx(date, txhash, function(blockchain_resp){
+                    console.log('[store] getDateTaskIdByTx');
                     deferred.resolve(blockchain_resp);
                 });
 				return deferred.promise;
