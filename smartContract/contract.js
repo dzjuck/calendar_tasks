@@ -1,6 +1,6 @@
 "use strict";
 
-//n1uBWSw2d9mrpUcbFTXqLhbKWNNBRPBL4Zj
+//n225xXqGA9BxU2Ud16zpLaYS7ZcoQRyhvDi
 
 class Task {
     constructor(data) {
@@ -21,7 +21,7 @@ class DateTask {
         this.task_id = obj.task_id;
         this.date = obj.date;
         this.completed = obj.completed || false;
-        this.recurrent = obj.recurrent || false;
+        this.txhash = obj.txhash;
     }
 
     toString() {
@@ -42,6 +42,7 @@ class CalendarTasksContract {
         LocalContractStorage.defineMapProperty(this, "userTasks");
         LocalContractStorage.defineMapProperty(this, "userDateTasks");
         LocalContractStorage.defineMapProperty(this, "userDates");
+        LocalContractStorage.defineMapProperty(this, "dateTasksByTx");
     }
 
     init() {}
@@ -71,6 +72,10 @@ class CalendarTasksContract {
         return date;
     }
 
+    _txHash() {
+        return Blockchain.transaction.hash;
+    }
+
     _createTask(text) {
         let task = new Task();
         task.id = this._generateId();
@@ -81,13 +86,14 @@ class CalendarTasksContract {
         return task;
     }
 
-    _createDateTask(task, date, recurrent) {
+    _createDateTask(task, date) {
         let date_task = new DateTask();
         date_task.id = this._generateId();
         date_task.task_id = task.id;
         date_task.date = date;
-        date_task.recurrent = recurrent;
+        date_task.txhash = this._txHash();
         this.dateTasks.put(date_task.id, date_task);
+        this.dateTasksByTx.put(this._txHash(), date_task.id);
 
         return date_task;
     }
@@ -124,23 +130,24 @@ class CalendarTasksContract {
         }
     }
 
-    // addTask(text) {
-    //     let user_id = this._userId();
-    //     let task = this._createTask(text);
-    //     let date_task = this._createDateTask(task);
-    //     this._addTaskToUsersTasksList(user_id, task);
-    //     this._addDateTaskToUsersDateTasksList(user_id, date_task);
-    // }
-
-    addDateTask(date, text, recurrent = true) {
+    addDateTask(date, text) {
         date = this._prepareDate(date);
         let user_id = this._userId();
         let task = this._createTask(text);
-        let date_task = this._createDateTask(task, date, recurrent);
-        if (recurrent) {
-            this._addTaskToUsersTasksList(user_id, task);
-        }
+        let date_task = this._createDateTask(task, date);
+        this._addTaskToUsersTasksList(user_id, task);
         this._addDateTaskToUsersDateTasksList(user_id, date, date_task);
+
+        let user_date_key = this._userDateKey(user_id, date);
+        let date_present = this.userDates.get(user_date_key) || false;
+        if (!date_present) {
+            this.userDates.put(user_date_key, true);
+        }
+    }
+
+    getDateTaskIdByTx(tx) {
+        let date_task_id = this.dateTasksByTx.get(tx);
+        return date_task_id;
     }
 
     completeDateTask(date_task_id, completed) {
@@ -159,22 +166,6 @@ class CalendarTasksContract {
         }
         date_task.text = text;
         this.dateTasks.put(date_task_id, date_task);
-    }
-
-    updateDateTaskRecurrentability(date_task_id, recurrent) {
-        let date_task = this.dateTasks.get(date_task_id);
-        if (!date_task) {
-            throw new Error("Date task not found");
-        }
-        let task = this.tasks.get(date_task.task_id);
-        if (!task) {
-            throw new Error("Task not found");
-        }
-        if (recurrent) {
-            this._addTaskToUsersTasksList(user_id, task);
-        } else {
-            this._removeTaskFromUsersTasksList(user_id, task);
-        }
     }
 
     deleteDateTask(date_task_id) {
@@ -292,11 +283,23 @@ class CalendarTasksContract {
             }
             return user_date_tasks;
         } else {
+            return null;
+        }
+    }
+
+    createDateTasks(date) {
+        date = this._prepareDate(date);
+        let user_id = this._userId();
+        let user_date_key = this._userDateKey(user_id, date);
+        let date_present = this.userDates.get(user_date_key) || false;
+        if (date_present) {
+            throw new Error("Date tasks already created");
+        } else {
             let user_task_ids = this.userTasks.get(user_id) || [];
             let user_date_task_ids = [];
             let user_date_tasks = [];
             for (var i in user_task_ids) {
-                let task_id = user_task_ids[id];
+                let task_id = user_task_ids[i];
                 let task = this.tasks.get(task_id);
                 let date_task = this._createDateTask(task, date, true);
                 user_date_task_ids.push(date_task.id);
@@ -305,7 +308,6 @@ class CalendarTasksContract {
             }
             this.userDateTasks.put(user_date_key, user_date_task_ids);
             this.userDates.put(user_date_key, true);
-            return user_date_tasks;
         }
     }
 
