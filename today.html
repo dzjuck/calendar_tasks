@@ -8,10 +8,9 @@
 		<link rel="stylesheet" href="js/ui-bootstrap-custom-2.5.0-csp.css">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 		<style>[ng-cloak] { display: none; }</style>
-        <script src="node_modules/todomvc-common/base.js"></script>
 		<script src="node_modules/angular/angular.js"></script>
 		<script src="node_modules/angular-ui-bootstrap/dist/ui-bootstrap.js"></script>
-        <script src="js/ui-bootstrap-custom-2.5.0.min.js"></script>
+        <!--script src="js/ui-bootstrap-custom-2.5.0.min.js"></script-->
         <script src="js/ui-bootstrap-custom-tpls-2.5.0.min.js"></script>
 		<script src="js/today_app.js"></script>
         
@@ -35,12 +34,19 @@
 
 	</head>
 	<body ng-app="calendar_tasks" style="max-width:100%" ng-controller='TodoCtrl as ctrl' ng-init='ctrl.init()'>
+        
+      <script type="text/ng-template" id="myPopoverTemplate">
+           <div>
+            <ul><li ng-repeat="todo in ctrl.defaults">{{todo.text}}</li></ul>
+            <button class="btn btn-default" ng-click="ctrl.initTasks()" >Populate this list?</button>
+          </div>
+        </script>
+
         <div class="col-sm-3" style="display:inline-block;min-height:290px; min-width:290px; margin-top:130px;">
             <div uib-datepicker ng-model="ctrl.currentDate" ng-change="ctrl.onDateChange()" class="well well-sm" datepicker-options="options"></div>
         </div>
 
         <div class="col-sm-8">
-
 			<section class="todoapp">
 				<header class="header">
                     <h1>Habbits {{ctrl.currentDate|date:'dd.MM.yy'}}</h1>
@@ -50,16 +56,13 @@
 
 				</header>
 
-                <section class="main" ng-cloak ng-show="ctrl.empty" >
-                    <button class="btn btn-default" ng-click="ctrl.initTasks()" >Populate default list</button>
-                </section>
 
 				<section class="main" ng-show="ctrl.todos.length" ng-cloak>
 					<ul class="todo-list">
 						<li ng-repeat="todo in ctrl.todos  track by $index" ng-class="{completed: todo.completed, editing: todo == editedTodo}">
 							<div class="view">
 								<input class="toggle" ng-if="todo.id" type="checkbox" ng-model="todo.completed" ng-change="ctrl.toggleCompleted(todo)">
-                                <i ng-if="!todo.id" class="blockhain_pending glyphicon glyphicon-cloud-upload"></i>
+                                <i ng-if="!todo.id" class="blockhain_pending glyphicon glyphicon-cloud-upload"  title="Saving to blockchain, tx:{{todo.hash}}"></i>
 								<label ng-dblclick="ctrl.editTask(todo)">{{todo.text}}</label>
 								<button ng-if="todo.id" class="destroy" ng-click="ctrl.removeTask(todo)"></button>
 							</div>
@@ -69,6 +72,12 @@
 						</li>
 					</ul>
 				</section>
+
+                <footer ng-show="ctrl.empty"  ng-cloak> 
+                    You have a list added before.
+                    <a uib-popover uib-popover-placement="'bottom'" uib-popover-template="'myPopoverTemplate'" popover-title="Previous tasks" type="button" class="btn btn-default">TPL Popover</a>
+                </footer>
+
 			</section>
 		<!--/script-->
         </div>

@@ -6,7 +6,7 @@
  * - exposes the model to the template and provides event handlers
  */
 angular.module('calendar_tasks')
-	.controller('TodoCtrl', ['$scope', '$interval', '$filter', 'todoStorage', '$http', function TodoCtrl($scope, $interval, $filter, store, $http ) {
+	.controller('TodoCtrl', ['$scope', '$interval', '$filter', 'todoStorage', '$http', '$sce', '$compile', function TodoCtrl($scope, $interval, $filter, store, $http, $sce, $compile ) {
 		'use strict';
 
         var store;
@@ -20,11 +20,31 @@ angular.module('calendar_tasks')
 
         vm.txMap = {};
 
+        function _populateResult(result) {
+            if (result.daily) {
+                vm.todos = result.daily;
+                vm.empty = false;
+            }
+            else if (result.default && result.default.length) {
+                vm.todos = [];
+                vm.empty = true;
+                vm.defaults = result.default;
+            }
+            else {
+                vm.todos = result.default;
+                vm.empty = false;
+            }   
+
+            if (vm.todos && vm.todos[0] && vm.todos[0].txhash && vm.txMap[vm.todos[0].txhash]) {
+                $interval.cancel(vm.txMap[vm.todos[0].txhash]);
+                delete vm.txMap[vm.todos[0].txhash];
+            }
+
+        };
+
         vm.init = function(type = 'active') {
             var dt = $filter('date')(new Date(), "yyyy-MM-dd");
-            store.get(dt).then(function(tasks){
-                vm.todos = tasks || [];
-            });
+            store.get(dt).then(_populateResult);
         }
 
         
@@ -35,11 +55,11 @@ angular.module('calendar_tasks')
 			}
 
             var completed = false;
-			$scope.saving = true;
             var date = $filter('date')( vm.currentDate || new Date(), "yyyy-MM-dd");
 
             store.add(text, date, completed)
 				.then(function success(block_response) {
+                    vm.empty = false;
                     console.log('[ctrl] on success block_task', block_response);
                     vm.newTask = '';
                     var tmpTask = {'text': text, 'date':date, 'completed':completed, 'id':false, 'hash':block_response['txhash'] };
@@ -50,6 +70,7 @@ angular.module('calendar_tasks')
 				.finally(function () {
 					$scope.saving = false;
 				});
+
         };
 
         function _checkTxHash(tmpTask) {
@@ -78,36 +99,17 @@ angular.module('calendar_tasks')
             store.initDate(date).then(function(block_response){
                 console.log('[init date]', block_response);
 
-                var _checkList = function() {
-                    store.get(date).then(function(tasks){
-                            vm.todos = tasks || [];
-                            vm.empty = false;
-                    });
+                function _checkList(params) {
+                    console.log('[_checkList] ', params.hash);
+                    store.get(params.date).then(_populateResult);//.finally( function(){} );
                 };
-                $interval( _checkList, 3000, 10, false, date );
+                vm.txMap[ block_response.txhash ] = $interval( _checkList, 3000, 10, false, {'date':date, 'hash':block_response.txhash} );
             });
         };
 
         vm.onDateChange = function() {
             var date = $filter('date')(vm.currentDate, "yyyy-MM-dd");
-            store.get(date).then(function(tasks){
-                vm.todos = tasks || [];
-                console.log(tasks, typeof(tasks));
-                
-                if (tasks == null) { 
-                    vm.empty = true;
-                    /*
-                    store.initDate(date).then(function(blockchain_resp){
-                        console.log('[init date]', blockchain_resp);
-                    });
-                    */
-                }
-                else {
-                    vm.empty = false;
-                }
-            });
-
-            console.log('changed date', date);
+            store.get(date).then(_populateResult);
 		};
 
         vm.toggleCompleted = function(task){
