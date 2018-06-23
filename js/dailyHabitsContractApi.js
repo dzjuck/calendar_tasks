@@ -1,4 +1,4 @@
-const CONTRACT_ADDRESS = "n1qWbUwD7x4UREzz5TbsKaozc1w6caPxC9J"; //testnet
+const CONTRACT_ADDRESS = "n1jywEeAQQBPpLvhPaJA17nCFCVtJLkkVjH"; //testnet
 
 class SmartContractApi {
     constructor(contractAdress) {

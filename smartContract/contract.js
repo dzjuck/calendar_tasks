@@ -55,7 +55,6 @@ class CalendarTasksContract {
         LocalContractStorage.defineMapProperty(this, "userTasks");
         LocalContractStorage.defineMapProperty(this, "userDateTasks");
         LocalContractStorage.defineMapProperty(this, "userDates");
-        // LocalContractStorage.defineMapProperty(this, "dateTasksByTx");
     }
 
     init() {}
@@ -93,7 +92,6 @@ class CalendarTasksContract {
         date_task.date = date;
         date_task.txhash = this._txHash();
         this.dateTasks.put(date_task.id, date_task);
-        // this.dateTasksByTx.put(this._txHash(), date_task.id);
 
         return date_task;
     }
@@ -128,6 +126,11 @@ class CalendarTasksContract {
             user_date_tasks = user_date_tasks.filter(item => item !== date_task.id);
             this.userDateTasks.put(user_date_key, user_date_tasks);
         }
+    }
+
+    _userDatePresent(user_date_key) {
+        let user_date_tasks = this.userDateTasks.get(user_date_key);
+
     }
 
     _decorateUserDateTasks(date_tasks) {
@@ -177,7 +180,7 @@ class CalendarTasksContract {
         if (!date_task) {
             throw new Error("Date task not found");
         }
-        date_task.completed = true;
+        date_task.completed = completed;
         this.dateTasks.put(date_task_id, date_task);
     }
 
@@ -288,13 +291,13 @@ class CalendarTasksContract {
     }
 
     // For tests
-    getUserDates(date) {
-        date = prepareDate(date);
-        let user_id = this._userId();
-        let user_date_key = this._userDateKey(user_id, date);
-        let date_present = this.userDates.get(user_date_key);
-        return date_present;
-    }
+    // getUserDates(date) {
+    //     date = prepareDate(date);
+    //     let user_id = this._userId();
+    //     let user_date_key = this._userDateKey(user_id, date);
+    //     let date_present = this.userDates.get(user_date_key);
+    //     return date_present;
+    // }
 
     getDateTasks(date) {
         date = prepareDate(date);
