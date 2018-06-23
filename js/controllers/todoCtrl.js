@@ -132,24 +132,7 @@ angular.module('calendar_tasks')
 			vm.reverted = true;
 		};
 
-
- /*
-
-		$scope.$watch('todos', function () {
-			$scope.remainingCount = $filter('filter')(vm.todos, { completed: false }).length;
-			$scope.completedCount = vm.todos.length - $scope.remainingCount;
-			$scope.allChecked = !$scope.remainingCount;
-		}, true);
-   
-		// Monitor the current route for changes and adjust the filter accordingly.
-		$scope.$on('$routeChangeSuccess', function () {
-			var status = $scope.status = $routeParams.status || '';
-			$scope.statusFilter = (status === 'active') ?
-				{ completed: false } : (status === 'completed') ?
-				{ completed: true } : {};
-		});
-
-		$scope.saveEdits = function (todo, event) {
+		vm.saveEdits = function (todo, event) {
 			// Blur events are automatically triggered after the form submit event.
 			// This does some unfortunate logic handling to prevent saving twice.
 			if (event === 'blur' && $scope.saveEvent === 'submit') {
@@ -159,27 +142,24 @@ angular.module('calendar_tasks')
 
 			$scope.saveEvent = event;
 
-			if ($scope.reverted) {
+			if (vm.reverted) {
 				// Todo edits were reverted-- don't save.
-				$scope.reverted = null;
+			    vm.reverted = null;
 				return;
 			}
 
-			todo.title = todo.title.trim();
+			todo.text = todo.text.trim();
 
-			if (todo.title === $scope.originalTodo.title) {
-				$scope.editedTodo = null;
+			if (todo.text === vm.originalTodo.text) {
+				vm.editedTodo = null;
 				return;
 			}
 
-			store[todo.title ? 'put' : 'delete'](todo)
-				.then(function success() {}, function error() {
-					todo.title = $scope.originalTodo.title;
-				})
-				.finally(function () {
-					$scope.editedTodo = null;
-				});
+            store.update(todo).then(function(block_resp){
+                 console.log('[update]', block_resp);
+                vm.editedTodo = null;
+            });
+			
 		};
 
-        */
 	}]);
