@@ -14,6 +14,7 @@ class SmartContractApi {
     _simulateCall({ value = "0", callArgs = "[]", callFunction , callback }) {
         this.nebPay.simulateCall(this._contractAdress, value, callFunction, callArgs, {
             callback: function(resp){
+                console.log(resp);
                 if(callback){
                     callback(resp);
                 }
@@ -35,7 +36,7 @@ class SmartContractApi {
 class DailyHabitsContractApi extends SmartContractApi{
     add(text, date, cb) {
         this._call({
-            callArgs : `[${date}, "${text}"]`,
+            callArgs : `["${date}", "${text}"]`,
             callFunction : "addDateTask",
             callback: cb
         });
@@ -43,7 +44,7 @@ class DailyHabitsContractApi extends SmartContractApi{
 
     getIdByDateAndTx(date,  tx, cb) {
         this._simulateCall({
-            callArgs : `[${date}, "${tx}"]`,
+            callArgs : `["${date}", "${tx}"]`,
             callFunction : "getDateTaskIdByDateAndTx",
             callback: cb
         });
@@ -75,7 +76,7 @@ class DailyHabitsContractApi extends SmartContractApi{
 
     getByDate(date, cb) {
         this._simulateCall({
-            callArgs : `[${date}"]`,
+            callArgs : `["${date}"]`,
             callFunction : "getDateTasks",
             callback: cb
         });
@@ -83,7 +84,7 @@ class DailyHabitsContractApi extends SmartContractApi{
 
     createByDate(date, cb) {
         this._call({
-            callArgs : `[${date}"]`,
+            callArgs : `["${date}"]`,
             callFunction : "createDateTasks",
             callback: cb
         });
