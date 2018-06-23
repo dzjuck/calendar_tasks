@@ -1,6 +1,6 @@
 "use strict";
 
-//n1ugysao5ErdrEHei4GLDorPdKq3uUAGni2
+//n1qWbUwD7x4UREzz5TbsKaozc1w6caPxC9J
 
 function prepareDate(date) {
     if (typeof date === 'string') {
@@ -71,7 +71,6 @@ class CalendarTasksContract {
     _userDateKey(user_id, date) {
         return user_id + "_" + date.getDate() + "_" + date.getMonth() + "_" + date.getFullYear();
     }
-
 
     _txHash() {
         return Blockchain.transaction.hash;
@@ -153,7 +152,7 @@ class CalendarTasksContract {
         }
     }
 
-    getDateTaskIdByTx(tx) {
+    getDateTaskIdByDateAndTx(date, tx) {
         let date_task_id = this.dateTasksByTx.get(tx);
         return date_task_id;
     }
@@ -294,7 +293,6 @@ class CalendarTasksContract {
                 let date_task_id = user_date_task_ids[i];
                 user_date_tasks.push(this.dateTasks.get(date_task_id));
             }
-            // return user_date_tasks;
             return this._decorateUserDateTasks(user_date_tasks);
         } else {
             return null;
