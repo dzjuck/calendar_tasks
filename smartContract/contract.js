@@ -1,6 +1,7 @@
 "use strict";
 
-//n1pfswmFDwMQiPetJHzdgq3Rr2ZVDpaLdYX
+//testnet: n1pfswmFDwMQiPetJHzdgq3Rr2ZVDpaLdYX
+//mainnet: n1swVWtHot4i7S6frXMnNhMCfpWNbDnnmq4
 
 function prepareDate(date) {
     if (typeof date === 'string') {
