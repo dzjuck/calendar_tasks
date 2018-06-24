@@ -7,12 +7,12 @@ module.exports = function(grunt) {
         separator: ';\n'
       },
       dist: {
-        src: [ 'node_modules/todomvc-common/base.js', 'node_modules/angular/angular.js', 'js/ui-bootstrap-custom-2.5.0.min.js', 'js/ui-bootstrap-custom-tpls-2.5.0.min.js', 'js/today_app.js', 'js/nebPay.js', 'js/dailyHabitsContractApi.js', 'js/controllers/todoCtrl.js', 'js/directives/todoFocus.js', 'js/directives/todoEscape.js', 'js/services/blockChainService.js' ],
+        src: [ 'node_modules/angular/angular.js', 'js/ui-bootstrap-custom-2.5.0.min.js', 'js/ui-bootstrap-custom-tpls-2.5.0.min.js', 'js/today_app.js', 'js/nebPay.js', 'js/dailyHabitsContractApi.js', 'js/controllers/todoCtrl.js', 'js/directives/todoFocus.js', 'js/directives/todoEscape.js', 'js/services/blockChainService.js' ],
         dest: 'js/all.js'
       },
 
       css: {
-            src: ['node_modules/todomvc-common/base.css', 'node_modules/todomvc-app-css/index.css', 'js/ui-bootstrap-custom-2.5.0-csp.css' ],
+            src: ['node_modules/todomvc-app-css/index.css', 'js/ui-bootstrap-custom-2.5.0-csp.css' ],
             dest: 'css/all.css'
       },
 
