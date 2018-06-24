@@ -1,6 +1,6 @@
 "use strict";
 
-//n1obWfSviBMugzFxRniWAosZxd8hPBuAbkG
+//n1pfswmFDwMQiPetJHzdgq3Rr2ZVDpaLdYX
 
 function prepareDate(date) {
     if (typeof date === 'string') {
@@ -223,7 +223,7 @@ class CalendarTasksContract {
             for (var i in user_task_ids) {
                 let task_id = user_task_ids[i];
                 let task = this.tasks.get(task_id);
-                user_tasks.push(user_task);
+                user_tasks.push(task);
             }
             return {"default": user_tasks};
         }
