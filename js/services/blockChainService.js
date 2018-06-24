@@ -43,7 +43,7 @@ angular.module('calendar_tasks')
 
             update: function(task) {
                 var deferred = $q.defer();
-                blockAPI.update(task.id, task.text, function(blockchain_resp){
+                blockAPI.updateText(task.id, task.text, function(blockchain_resp){
                     deferred.resolve(blockchain_resp);
                 });
 				return deferred.promise;
