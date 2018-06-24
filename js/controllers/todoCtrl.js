@@ -43,8 +43,14 @@ angular.module('calendar_tasks')
         };
 
         vm.init = function(type = 'active') {
-            var dt = $filter('date')(new Date(), "yyyy-MM-dd");
-            store.get(dt).then(_populateResult);
+            if ( typeof(webExtensionWallet) === "undefined" ) {
+                vm.installWallet = true;
+            }
+            else {
+                vm.installWallet = false;
+                var dt = $filter('date')(new Date(), "yyyy-MM-dd");
+                store.get(dt).then(_populateResult);
+            }
         }
 
         

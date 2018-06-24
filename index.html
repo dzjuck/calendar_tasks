@@ -9,6 +9,7 @@
 		<link rel="stylesheet" href="css/all.min.css">
 		<script src="js/all.js"></script>
         <!--
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 		<link rel="stylesheet" href="node_modules/todomvc-common/base.css">
 		<link rel="stylesheet" href="node_modules/todomvc-app-css/index.css">
 		<link rel="stylesheet" href="js/ui-bootstrap-custom-2.5.0-csp.css">
@@ -27,6 +28,7 @@
 
 		<script src="js/services/blockChainService.js"></script>
         -->
+        
         <style>
             .blockhain_pending{
                     width: 40px;
@@ -46,15 +48,22 @@
           </div>
         </script>
 
+        <div ng-if="ctrl.installWallet" ng-cloak class="alert alert-warning" >
+            <h1>Please install <a href="https://chrome.google.com/webstore/detail/nasextwallet/gehjkhmhclgnkkhpfamakecfgakkfkco">Web Wallet</a> as extension in order to use Daily Habbits.</h1>
+        </div>
+        <!--
+            <h2> And allow access to files urls </h2>
+            <img src="https://raw.githubusercontent.com/nebulasio/WebExtensionWallet/master/resources/extension_options.png" />
+        -->
 
-        <div class="col-sm-3" style="display:inline-block;min-height:290px; min-width:290px; margin-top:130px;">
+        <div ng-if="!ctrl.installWallet" class="col-sm-3" style="display:inline-block;min-height:290px; min-width:290px; margin-top:130px;">
             <div uib-datepicker ng-model="ctrl.currentDate" ng-change="ctrl.onDateChange()" class="well well-sm" datepicker-options="options"></div>
         </div>
 
-        <div class="col-sm-8">
+        <div ng-if="!ctrl.installWallet" class="col-sm-8">
 			<section class="todoapp">
 				<header class="header">
-                    <h1>Habbits {{ctrl.currentDate|date:'dd.MM.yy'}}</h1>
+                    <h1>Daily Habbits {{ctrl.currentDate|date:'dd.MM.yy'}}</h1>
 					<form class="todo-form" ng-submit="ctrl.addTask()">
 						<input class="new-todo" placeholder="What needs to be done?" ng-model="ctrl.newTask" ng-disabled="saving" autofocus>
 					</form>
