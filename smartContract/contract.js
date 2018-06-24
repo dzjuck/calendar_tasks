@@ -42,7 +42,7 @@ class DateTask {
     }
 }
 
-class CalendarTasksContract {
+class DailyHabitsContract {
     constructor() {
         LocalContractStorage.defineMapProperty(this, "tasks", {
             parse: function (data) { return new Task(data); },
@@ -251,14 +251,6 @@ class CalendarTasksContract {
             this.userDateTasks.put(user_date_key, user_date_task_ids);
         }
     }
-
-/*
-    userTasksPresent() {
-        let user_id = this._userId();
-        let user_tasks = this.userTasks.get(user_id) || [];
-        return (user_tasks === null);
-    }
-*/
 }
 
-module.exports = CalendarTasksContract;
+module.exports = DailyHabitsContract;
